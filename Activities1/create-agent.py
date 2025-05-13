@@ -41,7 +41,26 @@ response = client.chat.completions.create(
         ],
 )
 
-#print the response from the model
-# The response contains the model's reply to the user's message
-print(response.choices[0].message.content)
+# Create our own simple agent class
+class SimpleAgent:
+    def __init__(self, system=""):
+        self.system = system
+        self.messages = []
+        if system:
+            self.messages.append({"role": "system", "content": system})
 
+    def __call__(self, message):
+        self.messages.append({"role": "user", "content": message})
+        result = self.execute()
+        self.messages.append({"role": "assistant", "content": result})
+        return result
+
+    def execute(self):
+        # Send the messages to the model and get the response
+        # The model will respond to the messages based on its training and capabilities
+        response = client.chat.completions.create(
+            model=llm_name,
+            temperature=0.0,
+            messages=self.messages,
+        )
+        return response.choices[0].message.content
